@@ -171,7 +171,7 @@ pub struct Fee{
         payer:String,
 }
 
-#[derive(Serialize, Deserialize,Clone,Debug)]
+#[derive(Serialize, Deserialize,Clone,Debug,PartialEq, Eq)]
 pub struct FeeAmount{
     pub amount:String,
     pub denom:String,

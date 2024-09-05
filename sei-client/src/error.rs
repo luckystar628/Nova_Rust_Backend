@@ -32,5 +32,35 @@ impl fmt::Display for SeiClientErrs {
         }
     }
 }
-
 impl std::error::Error for SeiClientErrs {}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum NovaDBErrs {
+    UnfindWallet,
+    InsterNewWalletErr,
+    UpdateWalletNftHoldErr,
+    UpdateWalletNFtHoldOperationlErr,
+    UpdateWalletNftTransactionsErr,
+    UpdateWalletTokenTransactionsErr,
+    UpdateWalletStakeTransactionErr,
+
+    AcquiteConnPoolErr,
+
+}
+
+impl fmt::Display for NovaDBErrs {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            NovaDBErrs::UnfindWallet=>write!(f,"Can't find wallet"),
+            NovaDBErrs::InsterNewWalletErr=>write!(f,"Inster new wallet error"),
+            NovaDBErrs::UpdateWalletNftHoldErr=>write!(f,"Update wallet nft hold error"),
+            NovaDBErrs::UpdateWalletNFtHoldOperationlErr=>write!(f,"Operateion error in update wallet nft hold"),
+            NovaDBErrs::UpdateWalletNftTransactionsErr=>write!(f,"Update wallet nft transaction error"),
+            NovaDBErrs::UpdateWalletTokenTransactionsErr=>write!(f,"Update wallet token transaction error"),
+            NovaDBErrs::UpdateWalletStakeTransactionErr=>write!(f,"Update wallet stake transaction error"),
+
+            NovaDBErrs::AcquiteConnPoolErr=>write!(f,"Acquite db conn pool erro"),
+        }
+    }
+}
+impl std::error::Error for NovaDBErrs {}

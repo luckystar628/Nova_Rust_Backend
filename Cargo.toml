@@ -1,2 +1,2 @@
 [workspace]
-members = ["sei-client"]
+members = [ "nova-db", "searcher","sei-client"]

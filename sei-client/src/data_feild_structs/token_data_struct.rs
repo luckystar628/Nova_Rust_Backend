@@ -17,11 +17,16 @@ pub struct TokenInfo{
 }
 
 
+// transaction type
+#[derive(Serialize, Deserialize,Clone,Debug,PartialEq, Eq)]
+pub enum TokenTransaction {
+    TokenSwap(TokenSwap),
+    TokenTransfer(TokenTransfer),
+    ContractTokenTransfer(ContractTokenTransfer),
+}
 
 
-// transaction 
-
-#[derive(Serialize, Deserialize,Clone,Debug)]
+#[derive(Serialize, Deserialize,Clone,Debug,PartialEq, Eq)]
 pub struct TokenSwap{
     pub source_token:String,
     pub target_token:String,
@@ -34,7 +39,7 @@ pub struct TokenSwap{
 }
 
 
-#[derive(Serialize, Deserialize,Clone,Debug)]
+#[derive(Serialize, Deserialize,Clone,Debug,PartialEq, Eq)]
 pub struct TokenTransfer{
     pub sender:String,
     pub receiver:String,
@@ -47,7 +52,7 @@ pub struct TokenTransfer{
 
 
 
-#[derive(Serialize, Deserialize,Clone,Debug)]
+#[derive(Serialize, Deserialize,Clone,Debug,PartialEq, Eq)]
 pub struct ContractTokenTransfer{
     pub contract_address:String,
     pub sender:String,
