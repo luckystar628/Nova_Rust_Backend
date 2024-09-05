@@ -174,7 +174,7 @@ pub async fn get_nfts_info_by_contract<'apis>(
                                             nfts_info.lock().await.push(
                                                 nft_data_struct::NftInfo{
                                                     token_id:nft_id.clone(),
-                                                    name:name.unwrap(),
+                                                    name:format!("{}#{}",name.unwrap(),nft_id.to_owned()),
                                                     key:format!("{}-{}",contract_address,nft_id),
                                                     image:image.unwrap(),
                                                     royalty_percentage:nft_all_info.info.extension.royalty_percentage,
@@ -205,7 +205,7 @@ pub async fn get_address_nfts_hold_by_contract<'apis>(
     rpc_url:Option<&'apis str>,
     wallet_address:&'apis str,
     contract_address:&'apis str
-) -> Result<nft_data_struct::NftCollectAddressHold> {
+) -> Result<nft_data_struct::NftCollectHold> {
 
     let rpc_url=rpc_url.unwrap_or(ARCHIVE_RPC);
     let client=Client::new();
@@ -229,7 +229,8 @@ pub async fn get_address_nfts_hold_by_contract<'apis>(
 
     let nfts_hold=serde_json::from_value::<nft_collect_contract_rp_struct::NftsHold>(rp.get("data").unwrap().to_owned()).unwrap();
     if let Ok((nft_collect_info,nfts_info))=tokio::try_join!(get_nft_collect_info_by_contract(Some(rpc_url), contract_address),get_nfts_info_by_contract(Some(rpc_url), contract_address, &nfts_hold.tokens)){
-        Ok(nft_data_struct::NftCollectAddressHold{
+        Ok(nft_data_struct::NftCollectHold{
+            collect_address:contract_address.to_owned(),
             collect_info:nft_collect_info,
             nfts_hold:nfts_info
         })

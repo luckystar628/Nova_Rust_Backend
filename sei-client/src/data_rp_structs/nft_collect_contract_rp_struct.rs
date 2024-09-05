@@ -3,7 +3,7 @@ use serde_json::Value;
 
 
 // nft collection 信息
-#[derive(Serialize, Deserialize,Clone,Debug)]
+#[derive(Serialize, Deserialize,Clone,Debug,PartialEq, Eq,sqlx::Type)]
 pub struct NftCollectionInfo{
     pub name:String,
     pub symbol:String,

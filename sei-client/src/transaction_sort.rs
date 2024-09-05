@@ -77,9 +77,9 @@ impl Transaction for tx_rp_struct::Log {
 
 
     fn transaction_event_type(&self,transaction_sender:Self::TransactionSender,transaction_fee:Self::TransactionFee,ts:Self::Ts,tx:Self::Tx)->TransactionEvent {
-        let mut x=vec![];
+        
         if self.is_nft_only_create_auction(){
-            
+            let mut x=vec![];
             self.events.iter().for_each(|event|{
                 if event._type=="wasm-create_auction"{
 

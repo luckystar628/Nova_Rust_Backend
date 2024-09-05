@@ -1,13 +1,14 @@
 use serde::{Deserialize, Serialize};
-use crate::data_rp_structs::{token_contract_rp_struct, tx_rp_struct::FeeAmount};
+use crate::data_rp_structs::tx_rp_struct::FeeAmount;
 
-#[derive(Serialize, Deserialize,Clone,Debug)]
+#[derive(Serialize, Deserialize,Clone,Debug,PartialEq, Eq)]
 pub enum StakeType {
     Delegate,
     Undelegate
 }
 
-#[derive(Serialize, Deserialize,Clone,Debug)]
+
+#[derive(Serialize, Deserialize,Clone,Debug,PartialEq, Eq)]
 pub struct Stake{
     pub validator_address:String,
     pub delegator_address:String,
@@ -18,3 +19,4 @@ pub struct Stake{
     pub ts:String,
     pub tx:String,
 }
+

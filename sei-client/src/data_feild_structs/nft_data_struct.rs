@@ -1,10 +1,10 @@
 use serde::{Deserialize, Serialize};
-
+use sqlx::{postgres::PgRow, Row};
 use crate::data_rp_structs::{nft_collect_contract_rp_struct::NftCollectionInfo, tx_rp_struct::FeeAmount};
 
 
 //  nft info
-#[derive(Serialize, Deserialize,Clone,Debug)]
+#[derive(Serialize, Deserialize,Clone,Debug,PartialEq, Eq)]
 pub struct NftInfo{
     pub token_id:String,
     pub name:String, // CollectionInfo name + # + id 
@@ -13,23 +13,35 @@ pub struct NftInfo{
     pub royalty_percentage:u64,
     pub attributes:Vec<NftAttribute>,
 }
-#[derive(Serialize, Deserialize,Clone,Debug)]
+#[derive(Serialize, Deserialize,Clone,Debug,PartialEq, Eq)]
 pub struct NftAttribute{
     pub trait_type:String,
     pub value:String,
 }
 
-
 // 用户持有的 nft collect
-#[derive(Serialize, Deserialize,Clone,Debug)]
-pub struct NftCollectAddressHold{
+#[derive(Serialize, Deserialize,Clone,Debug,PartialEq, Eq)]
+pub struct NftCollectHold{
+    pub collect_address:String,
     pub collect_info:NftCollectionInfo,
     pub nfts_hold:Vec<NftInfo>
 }
 
+// transaction type
+#[derive(Serialize, Deserialize,Clone,Debug,PartialEq, Eq)]
+pub enum NftTransaction {
+    Mint(Mint),
+    BatchBids(BatchBids),
+    OnlyCreateAuction(OnlyCreateAuction),
+    Transfer(Transfer),
+    FixedSell(FixedSell),
+    PurchaseCart(PurchaseCart),
+    AcceptBid(AcceptBid),
+    CretaeAuction(CretaeAuction),
+    CancelAuction(CancelAuction),
+}
 
-// trade type 
-#[derive(Serialize, Deserialize,Clone,Debug)]
+#[derive(Serialize, Deserialize,Clone,Debug,PartialEq, Eq)]
 pub struct OnlyCreateAuction{
     pub collection:String,
     pub nft_id:String,
@@ -40,7 +52,7 @@ pub struct OnlyCreateAuction{
     pub tx:String,
 }
 
-#[derive(Serialize, Deserialize,Clone,Debug)]
+#[derive(Serialize, Deserialize,Clone,Debug,PartialEq, Eq)]
 pub struct Transfer{
     pub collection:String,
     pub sender:String,
@@ -52,7 +64,7 @@ pub struct Transfer{
     pub tx:String,
 }
 
-#[derive(Serialize, Deserialize,Clone,Debug)]
+#[derive(Serialize, Deserialize,Clone,Debug,PartialEq, Eq)]
 pub struct Mint{
     pub collection:String,
     pub recipient:String,
@@ -64,7 +76,7 @@ pub struct Mint{
     pub tx:String,
 }
 
-#[derive(Serialize, Deserialize,Clone,Debug)]
+#[derive(Serialize, Deserialize,Clone,Debug,PartialEq, Eq)]
 pub struct FixedSell{
     pub collection:String,
     pub sender:String,
@@ -77,8 +89,7 @@ pub struct FixedSell{
     pub tx:String,
 }
 
-
-#[derive(Serialize, Deserialize,Clone,Debug)]
+#[derive(Serialize, Deserialize,Clone,Debug,PartialEq, Eq)]
 pub struct BatchBids{
     pub collection:String,
     pub sender:String,
@@ -91,7 +102,7 @@ pub struct BatchBids{
     pub tx:String,
 }
 
-#[derive(Serialize, Deserialize,Clone,Debug)]
+#[derive(Serialize, Deserialize,Clone,Debug,PartialEq, Eq)]
 pub struct PurchaseCart{
     pub collection:String,
     pub sender:String,
@@ -108,7 +119,7 @@ pub struct PurchaseCart{
     pub tx:String,
 }
 
-#[derive(Serialize, Deserialize,Clone,Debug)]
+#[derive(Serialize, Deserialize,Clone,Debug,PartialEq, Eq)]
 pub struct AcceptBid{
     pub collection:String,
     pub sender:String,
@@ -125,7 +136,7 @@ pub struct AcceptBid{
     pub tx:String,
 }
 
-#[derive(Serialize, Deserialize,Clone,Debug)]
+#[derive(Serialize, Deserialize,Clone,Debug,PartialEq, Eq)]
 pub struct CretaeAuction{
     pub collection:String,
     pub sender:String,
@@ -138,7 +149,7 @@ pub struct CretaeAuction{
     pub tx:String,
 }
 
-#[derive(Serialize, Deserialize,Clone,Debug)]
+#[derive(Serialize, Deserialize,Clone,Debug,PartialEq, Eq)]
 pub struct CancelAuction{
     pub collection:String,
     pub sender:String,
