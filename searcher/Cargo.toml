@@ -4,3 +4,13 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+tokio = { version = "1.38.0", features = ["full"] }
+anyhow={version="1.0.86"}
+serde = { version = "1.0.209", features = ["derive"] }
+serde_json={version = "1.0.127"}
+websocket="0.27.1"
+futures-util = "0.3"
+futures="0.3.30"
+sqlx = { version = "0.8.2", features = ["postgres", "runtime-tokio-native-tls", "macros","json"] }
+nova-db={path="../nova-db"}
+sei-client={path=  "../sei-client"}

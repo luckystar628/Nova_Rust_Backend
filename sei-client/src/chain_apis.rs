@@ -27,6 +27,7 @@ pub  async fn get_transaction_by_tx<'apis>(
         }
         return Err(SeiClientErrs::Unkonw.into());
     };
+    // println!("{:#?}",rp);
     let native_transaction_data_res=serde_json::from_value::<NativeTransactionData>(rp.to_owned());
     let evm_transaction_data_res=serde_json::from_value::<EvmTransactionData>(rp.to_owned());
     let bank_transaction_data_res=serde_json::from_value::<BankTransactionData>(rp.to_owned());
@@ -41,9 +42,10 @@ pub  async fn get_transaction_by_tx<'apis>(
     }else if stake_transaction_data_res.is_ok() {
         return Ok(TransactionData::Stake(stake_transaction_data_res.unwrap()));
     }else {
-        println!("{:#?}",evm_transaction_data_res);
-        println!("{:#?}",native_transaction_data_res);
-        println!("{:#?}",stake_transaction_data_res);
+       
+        // println!("{:#?}",evm_transaction_data_res);
+        // println!("{:#?}",native_transaction_data_res);
+        // println!("{:#?}",stake_transaction_data_res);
         return Err(SeiClientErrs::UnkonwTransactionType.into());
     }
 }
