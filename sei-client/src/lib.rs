@@ -9,7 +9,7 @@ pub mod error;
 mod tests {
     use chain_apis::{get_address_balances, get_address_nfts_hold_by_contract, get_nft_collect_info_by_contract, get_nfts_info_by_contract, get_token_info_by_contract, get_transaction_by_tx};
     use anyhow::Result;
-    use data_rp_structs::tx_rp_struct::TransactionData;
+    
     use transaction_sort::Transaction;
     
     use super::*;
