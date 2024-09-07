@@ -29,7 +29,6 @@ pub enum TransactionEvent {
 }
 
 
-
 pub trait Transaction {
     
     type TransactionSender;

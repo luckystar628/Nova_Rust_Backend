@@ -1,7 +1,7 @@
 use std::{sync::Arc, time::Duration};
 
 use anyhow::Result;
-use sei_client::{chain_apis, data_rp_structs::tx_rp_struct, transaction_sort::Transaction};
+use sei_client::{chain_apis, data_feild_structs::{nft_data_struct, token_data_struct}, data_rp_structs::tx_rp_struct, transaction_sort::{Transaction, TransactionEvent}};
 use serde_json::Value;
 use tokio::{sync::mpsc::{UnboundedReceiver, UnboundedSender}, time::sleep};
 use websocket::{ClientBuilder, OwnedMessage};
@@ -65,9 +65,11 @@ pub async fn run_wss(
                                 let data:Value=serde_json::from_str(&text_msg).unwrap();
                                 //解析路径
                                 let keys_path:&Vec<&str>=&vec!["result","events","tx.hash"];
+                                
                                 if get_tx_hash(&data,keys_path).is_none() || is_aggreate_vote(&data){
                                     continue;
                                 };
+                                
                                 let tx_hash=get_tx_hash(&data,keys_path).unwrap();
                                 while let Ok(tx_response_data) = chain_apis::get_transaction_by_tx(Some(SEIRPCSERVER), &tx_hash).await {
                                     let _ = transaction_data_sender.send(tx_response_data);
@@ -107,23 +109,137 @@ pub async fn save_to_db(
             );
 
             match transaction_type {
-                sei_client::transaction_sort::TransactionEvent::NftMint(_) => todo!(),
-                sei_client::transaction_sort::TransactionEvent::NftBatchBids(_) => todo!(),
-                sei_client::transaction_sort::TransactionEvent::NftOnlyTransfer(_) => todo!(),
-                sei_client::transaction_sort::TransactionEvent::NftCretaeAuction(_) => todo!(),
-                sei_client::transaction_sort::TransactionEvent::NftCancelAuction(_) => todo!(),
-                sei_client::transaction_sort::TransactionEvent::NftPurchaseCart(_) => todo!(),
-                sei_client::transaction_sort::TransactionEvent::NftAcceptBid(_) => todo!(),
-                sei_client::transaction_sort::TransactionEvent::NftFixedSell(_) => todo!(),
-                sei_client::transaction_sort::TransactionEvent::NftOnlyCreateAuction(_) => todo!(),
-                sei_client::transaction_sort::TransactionEvent::TokenHeihtSwap(_) => todo!(),
-                sei_client::transaction_sort::TransactionEvent::TokenNormalSwap(_) => todo!(),
-                sei_client::transaction_sort::TransactionEvent::TokenTransferByWei(_) => todo!(),
-                sei_client::transaction_sort::TransactionEvent::TokenTransferByBank(_) => todo!(),
-                sei_client::transaction_sort::TransactionEvent::TokenTransferByContract(_) => todo!(),
-                sei_client::transaction_sort::TransactionEvent::Delegate(_) => todo!(),
-                sei_client::transaction_sort::TransactionEvent::Undelegate(_) => todo!(),
-                sei_client::transaction_sort::TransactionEvent::Unkonw => todo!(),
+                TransactionEvent::NftMint(msgs) => {
+                    for msg in msgs{
+
+                        let collection_address=msg.collection.to_owned();
+                        
+                        let nft_info_res=chain_apis::get_nfts_info_by_contract(Some(SEIRPCSERVER), &collection_address, &vec![msg.nft_id.to_owned()]).await;
+                        if nft_info_res.is_err(){
+                            eprintln!("{:#?}",&nft_info_res.err().unwrap());
+                            continue;
+                        };
+                        let nft_info=nft_info_res.unwrap()[0].to_owned();
+                        let update_nft_hold=nova_db::update_wallet_nft_hold(&msg.recipient, &collection_address, &nft_info, "add", &conn_pool).await;
+                        let update_nft_mint=nova_db::update_wallet_nft_transactions(&collection_address,&nft_data_struct::NftTransaction::Mint(msg), &conn_pool).await;
+                        if update_nft_hold.is_err(){
+                            eprintln!("{:#?}",update_nft_hold.err().unwrap());
+                        }else if update_nft_mint.is_err() {
+                            eprintln!("{:#?}",update_nft_mint.err().unwrap());
+                        }else {
+                            println!("[*] Save NFT Mint in DB Sucess");
+                        }
+                    }
+                },
+                TransactionEvent::NftBatchBids(msgs) => {
+                    for msg in msgs{
+
+                    }
+                },
+                TransactionEvent::NftOnlyTransfer(msgs) => todo!(),
+                TransactionEvent::NftCretaeAuction(msgs) => todo!(),
+                TransactionEvent::NftCancelAuction(msgs) => todo!(),
+                TransactionEvent::NftPurchaseCart(msgs) => todo!(),
+                TransactionEvent::NftAcceptBid(msgs) => todo!(),
+                TransactionEvent::NftFixedSell(msgs) => todo!(),
+                TransactionEvent::NftOnlyCreateAuction(msgs) => todo!(),
+                TransactionEvent::TokenHeihtSwap(msgs) =>{
+                    for msg in msgs{
+                        let wallet_address=msg.clone().transaction_sender.unwrap();
+                        let update_token_transaction=nova_db::update_wallet_token_transactions(&wallet_address, &token_data_struct::TokenTransaction::TokenSwap(msg), &conn_pool).await;
+                        if update_token_transaction.is_err(){
+                            eprintln!("{}",update_token_transaction.err().unwrap())
+                        }else {
+                            println!("[*] Save Token Swap in DB Sucess");
+                        }
+                    }
+                },
+                TransactionEvent::TokenNormalSwap(msgs) => {
+                    for msg in msgs{
+                        let wallet_address=msg.clone().transaction_sender.unwrap();
+                        let update_token_transaction=nova_db::update_wallet_token_transactions(&wallet_address, &token_data_struct::TokenTransaction::TokenSwap(msg), &conn_pool).await;
+                        if update_token_transaction.is_err(){
+                            eprintln!("{}",update_token_transaction.err().unwrap())
+                        }else {
+                            println!("[*] Save Token Swap in DB Sucess");
+                        }
+                    }
+                },
+                TransactionEvent::TokenTransferByWei(msgs) =>{
+                    for msg in msgs{
+                        let sender=msg.sender.to_owned();
+                        let reveiver=msg.receiver.to_owned();
+
+                        let update_sender_token_transaction=nova_db::update_wallet_token_transactions(&sender, &token_data_struct::TokenTransaction::TokenTransfer(msg.to_owned()), &conn_pool).await;
+                        let update_reveiver_token_transaction=nova_db::update_wallet_token_transactions(&reveiver, &token_data_struct::TokenTransaction::TokenTransfer(msg.to_owned()), &conn_pool).await;
+                        
+                        if update_reveiver_token_transaction.is_err(){
+                            eprintln!("{}",update_reveiver_token_transaction.err().unwrap());
+                        }else if update_sender_token_transaction.is_err() {
+                            eprintln!("{}",update_sender_token_transaction.err().unwrap());
+                        }else {
+                            println!("[*] Save Token Transfer in DB Sucess");
+                        }
+                    }
+                },
+                TransactionEvent::TokenTransferByBank(msgs) => {
+                    for msg in msgs{
+                        let sender=msg.sender.to_owned();
+                        let reveiver=msg.receiver.to_owned();
+
+                        let update_sender_token_transaction=nova_db::update_wallet_token_transactions(&sender, &token_data_struct::TokenTransaction::TokenTransfer(msg.to_owned()), &conn_pool).await;
+                        let update_reveiver_token_transaction=nova_db::update_wallet_token_transactions(&reveiver, &token_data_struct::TokenTransaction::TokenTransfer(msg.to_owned()), &conn_pool).await;
+                        
+                        if update_reveiver_token_transaction.is_err(){
+                            eprintln!("{}",update_reveiver_token_transaction.err().unwrap());
+                        }else if update_sender_token_transaction.is_err() {
+                            eprintln!("{}",update_sender_token_transaction.err().unwrap());
+                        }else {
+                            println!("[*] Save Token Transfer in DB Sucess");
+                        }
+                    }
+                },
+                TransactionEvent::TokenTransferByContract(msgs) => {
+                    for msg in msgs{
+                        
+                        let sender=msg.sender.to_owned();
+                        let reveiver=msg.receiver.to_owned();
+
+                        let update_sender_token_transaction=nova_db::update_wallet_token_transactions(&sender, &token_data_struct::TokenTransaction::ContractTokenTransfer(msg.to_owned()), &conn_pool).await;
+                        let update_reveiver_token_transaction=nova_db::update_wallet_token_transactions(&reveiver, &token_data_struct::TokenTransaction::ContractTokenTransfer(msg.to_owned()), &conn_pool).await;
+                        
+                        if update_reveiver_token_transaction.is_err(){
+                            eprintln!("{}",update_reveiver_token_transaction.err().unwrap());
+                        }else if update_sender_token_transaction.is_err() {
+                            eprintln!("{}",update_sender_token_transaction.err().unwrap());
+                        }else {
+                            println!("[*] Save Contract Token Transfer in DB Sucess");
+                        }
+                    }
+                },
+                TransactionEvent::Delegate(msgs) =>{
+                    for msg in msgs{
+                        let update_stake_transaction=nova_db::update_wallet_stake_transactions(&msg.delegator_address, &msg, &conn_pool).await;
+                        if update_stake_transaction.is_err(){
+                            eprintln!("{}",update_stake_transaction.err().unwrap());
+                        }else {
+                            println!("[*] Save Stake in DB Sucess");
+                        }
+                    }
+                },
+                TransactionEvent::Undelegate(msgs) =>{
+                    for msg in msgs{
+                        let update_stake_transaction=nova_db::update_wallet_stake_transactions(&msg.delegator_address, &msg, &conn_pool).await;
+                        if update_stake_transaction.is_err(){
+                            eprintln!("{}",update_stake_transaction.err().unwrap());
+                        }else {
+                            println!("[*] Save Stake in DB Sucess");
+                        }
+                    }
+                },
+                TransactionEvent::Unkonw =>{
+                    println!("Unkonw Transaction");
+                },
             }
         }
     }
