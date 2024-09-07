@@ -478,6 +478,7 @@ mod tests{
         Ok(())
     }
 
+
     #[tokio::test]
     async fn test_update_wallet_token_transactions() -> Result<()> {
 
