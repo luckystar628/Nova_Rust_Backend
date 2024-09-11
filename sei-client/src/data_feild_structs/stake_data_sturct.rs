@@ -8,7 +8,7 @@ pub enum StakeType {
 }
 
 
-#[derive(Serialize, Deserialize,Clone,Debug,PartialEq, Eq)]
+#[derive(Serialize,Deserialize,Clone,Debug,PartialEq, Eq)]
 pub struct Stake{
     pub validator_address:String,
     pub delegator_address:String,
