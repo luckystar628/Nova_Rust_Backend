@@ -1,5 +1,4 @@
 use serde::{Deserialize, Serialize};
-use sqlx::{postgres::PgRow, Row};
 use crate::data_rp_structs::{nft_collect_contract_rp_struct::NftCollectionInfo, tx_rp_struct::FeeAmount};
 
 

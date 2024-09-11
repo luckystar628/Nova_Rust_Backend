@@ -1,14 +1,13 @@
 [package]
-name = "nova-db"
+name = "backend"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-serde = { version = "1.0.209", features = ["derive"] }
-serde_json={version = "1.0.127"}
+actix-web = {version="4.7.0",features=["openssl"]}
+actix-cors={version="0.7.0"}
 sqlx = { version = "0.8.2", features = ["postgres", "runtime-tokio-native-tls", "macros","json"] }
 tokio = { version = "1.38.0", features = ["full"] }
-chrono = {version = "0.4.38",features=["serde"]}
+openssl={version="0.10.64"}
 dotenv = {version="0.15.0"}
 anyhow={version="1.0.86"}
-sei-client={path=  "../sei-client"}

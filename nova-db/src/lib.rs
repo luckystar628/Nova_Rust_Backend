@@ -1,11 +1,12 @@
 pub mod tables;
 
-use std::{env, sync::Arc};
+use std::env;
+use chrono::{DateTime, Utc};
 use dotenv::dotenv;
 use anyhow::Result;
 use sei_client::{chain_apis, data_feild_structs::{nft_data_struct, stake_data_sturct, token_data_struct}, error::NovaDBErrs};
 use sqlx::{postgres::{PgPoolOptions, PgQueryResult}, PgPool, Pool, Postgres,Row};
-use tables::WalletInfo;
+use tables::{NftContract, WalletInfo};
 
 pub async fn create_db_conn_pool() -> Result<Pool<Postgres>> {
     
@@ -162,8 +163,22 @@ pub async fn update_wallet_nft_transactions<'nova_db>(
     match sqlx::query(&find_wallet_nft_transactions_query).bind(wallet_address).fetch_one(conn_pool).await{
         Ok(row)=>{
             let mut nft_transactions=serde_json::from_value::<Vec<nft_data_struct::NftTransaction>>(row.get("nft_transactions")).unwrap();
-            nft_transactions.push(nft_transaction.to_owned());
-
+            if !nft_transactions.iter().any(|t|{
+                match (t,nft_transaction) {
+                    (nft_data_struct::NftTransaction::Mint(t1), nft_data_struct::NftTransaction::Mint(t2)) =>t1.tx==t2.tx &&t1.ts==t2.ts ,
+                    (nft_data_struct::NftTransaction::BatchBids(t1), nft_data_struct::NftTransaction::BatchBids(t2)) =>t1.tx==t2.tx &&t1.ts==t2.ts ,
+                    (nft_data_struct::NftTransaction::OnlyCreateAuction(t1), nft_data_struct::NftTransaction::OnlyCreateAuction(t2)) => t1.tx==t2.tx &&t1.ts==t2.ts ,
+                    (nft_data_struct::NftTransaction::Transfer(t1), nft_data_struct::NftTransaction::Transfer(t2)) => t1.tx==t2.tx &&t1.ts==t2.ts , 
+                    (nft_data_struct::NftTransaction::FixedSell(t1), nft_data_struct::NftTransaction::FixedSell(t2)) =>t1.tx==t2.tx &&t1.ts==t2.ts ,
+                    (nft_data_struct::NftTransaction::PurchaseCart(t1), nft_data_struct::NftTransaction::PurchaseCart(t2)) =>t1.tx==t2.tx &&t1.ts==t2.ts ,
+                    (nft_data_struct::NftTransaction::AcceptBid(t1), nft_data_struct::NftTransaction::AcceptBid(t2)) => t1.tx==t2.tx &&t1.ts==t2.ts ,
+                    (nft_data_struct::NftTransaction::CretaeAuction(t1), nft_data_struct::NftTransaction::CretaeAuction(t2)) =>t1.tx==t2.tx &&t1.ts==t2.ts ,
+                    (nft_data_struct::NftTransaction::CancelAuction(t1), nft_data_struct::NftTransaction::CancelAuction(t2)) => t1.tx==t2.tx &&t1.ts==t2.ts ,
+                    _=>true,
+                }
+            }){
+                nft_transactions.push(nft_transaction.to_owned());
+            }
             let update_nft_transaction_event=sqlx::query(updat_wallet_nft_transactions_query)
                                                                                 .bind(wallet_address)
                                                                                 .bind(serde_json::to_value(nft_transactions).unwrap())
@@ -210,8 +225,18 @@ pub async fn update_wallet_token_transactions<'nova_db>(
     match sqlx::query(&find_wallet_token_transactions_query).bind(wallet_address).fetch_one(conn_pool).await{
         Ok(row)=>{
             let mut token_transactions=serde_json::from_value::<Vec<token_data_struct::TokenTransaction>>(row.get("token_transactions")).unwrap();
-            token_transactions.push(token_transaction.to_owned());
-
+            
+            if !token_transactions.iter().any(|t|{
+                match (t,token_transaction) {
+                    (token_data_struct::TokenTransaction::TokenSwap(t1), token_data_struct::TokenTransaction::TokenSwap(t2)) =>t1.tx==t2.tx &&t1.ts==t2.ts,
+                    (token_data_struct::TokenTransaction::TokenTransfer(t1), token_data_struct::TokenTransaction::TokenTransfer(t2)) => t1.tx==t2.tx &&t1.ts==t2.ts ,
+                    (token_data_struct::TokenTransaction::ContractTokenTransfer(t1), token_data_struct::TokenTransaction::ContractTokenTransfer(t2)) => t1.tx==t2.tx &&t1.ts==t2.ts ,
+                    _=>true
+                }
+            }){
+                token_transactions.push(token_transaction.to_owned());
+            }
+            
             let update_token_transaction_event=sqlx::query(updat_wallet_token_transactions_query)
                                                                                 .bind(wallet_address)
                                                                                 .bind(serde_json::to_value(token_transactions).unwrap())
@@ -259,7 +284,17 @@ pub async fn update_wallet_stake_transactions<'nova_db>(
     match sqlx::query(find_wallet_stake_transactions_query).bind(wallet_address).fetch_one(conn_pool).await{
         Ok(row)=>{
             let mut stake_transactions=serde_json::from_value::<Vec<stake_data_sturct::Stake>>(row.get("stake_transactions")).unwrap();
-            stake_transactions.push(stake_transaction.to_owned());
+
+            if !stake_transactions.iter().any(|t|{
+                t._type==stake_transaction._type && 
+                t.amount==stake_transaction.amount &&
+                t.delegator_address==stake_transaction.delegator_address &&
+                t.ts==stake_transaction.ts &&
+                t.tx==stake_transaction.tx &&
+                t.transaction_sender == stake_transaction.transaction_sender
+            }){
+                stake_transactions.push(stake_transaction.to_owned());
+            }
 
             let update_stake_transaction_event=sqlx::query(updat_wallet_stake_transactions_query)
                                                                                 .bind(wallet_address)
@@ -294,6 +329,176 @@ pub async fn update_wallet_stake_transactions<'nova_db>(
             }
         }
     }
+}
+
+pub async fn find_nft_collection<'nova_db>(
+    collect_address:&'nova_db str,
+    conn_pool:&'nova_db PgPool,
+) -> Result<NftContract> {
+    let query=r#"SELECT collection_address, collection_floor_price, nfts_floor_price FROM "NFTContracts" WHERE collection_address = $1"#;
+    if let Ok(nft_contract) = sqlx::query_as::<_,NftContract>(query)
+                                   .bind(collect_address)
+                                   .fetch_one(conn_pool).await{
+        Ok(nft_contract)
+    }else {
+        Err(NovaDBErrs::UnfindNFTContract.into())
+    }
+}
+
+
+
+
+
+pub async fn insert_new_nft_collection<'nova_db>(
+    collect_address:&'nova_db str,
+    collection_floor_price:Option<tables::CollectionFloorPrice>,
+    nfts_floor_price:Option<Vec<tables::NftFloorPrice>>,
+    conn_pool:&'nova_db PgPool,
+) -> Result<PgQueryResult> {
+    let query=r#"INSERT INTO "NFTContracts" (collection_address, collection_floor_price, nfts_floor_price) VALUES ($1, $2, $3)"#;
+
+    if collection_floor_price.is_some() && nfts_floor_price.is_some() {
+        let inster_event=sqlx::query::<sqlx::Postgres>(query)
+                                                            .bind(collect_address)
+                                                            .bind(serde_json::to_value(collection_floor_price.unwrap()).unwrap())
+                                                            .bind(serde_json::to_value(nfts_floor_price.unwrap()).unwrap())
+                                                            .execute(conn_pool)
+                                                            .await;
+        if inster_event.is_ok(){
+            return Ok(inster_event.unwrap());
+        }
+    }else if nfts_floor_price.is_some() {
+            let collection_floor_price=tables::CollectionFloorPrice{
+                floor_price:nfts_floor_price.clone().unwrap()[0].floor_price.clone(),
+                ts:nfts_floor_price.clone().unwrap()[0].ts.clone(),
+            };
+            let inster_event=sqlx::query::<sqlx::Postgres>(query)
+                                                            .bind(collect_address)
+                                                            .bind(serde_json::to_value(collection_floor_price).unwrap())
+                                                            .bind(serde_json::to_value(nfts_floor_price.unwrap()).unwrap())
+                                                            .execute(conn_pool)
+                                                            .await;
+        if inster_event.is_ok(){
+            return Ok(inster_event.unwrap());
+        }
+    }else if collection_floor_price.is_some(){
+        let inster_event=sqlx::query::<sqlx::Postgres>(query)
+                                                           .bind(collect_address)
+                                                           .bind(serde_json::to_value(collection_floor_price.unwrap()).unwrap())
+                                                           .bind(serde_json::to_value(serde_json::json!({})).unwrap())
+                                                           .execute(conn_pool)
+                                                           .await;
+       if inster_event.is_ok(){
+           return Ok(inster_event.unwrap());
+       }
+    }else {
+        let inster_event=sqlx::query::<sqlx::Postgres>(query)
+                                                            .bind(collect_address)
+                                                            .bind(serde_json::to_value(serde_json::json!({})).unwrap())
+                                                            .bind(serde_json::to_value(serde_json::json!({})).unwrap())
+                                                            .execute(conn_pool)
+                                                            .await;
+        if inster_event.is_ok(){
+            return Ok(inster_event.unwrap());
+        }
+    }
+
+    Err(NovaDBErrs::InsterNewNFTContractErr.into())
+  
+}
+
+pub async fn update_nft_collection<'nova_db>(
+    collect_address:&'nova_db str,
+    conn_pool:&'nova_db PgPool,
+    nft_floor_price:tables::NftFloorPrice,
+)->Result<PgQueryResult>{
+    let query1=r#"UPDATE "NFTContracts" SET nfts_floor_price =$2 , collection_floor_price= $3 WHERE collection_address = $1 "#;
+    let query2=r#"UPDATE "NFTContracts" SET nfts_floor_price =$2 WHERE collection_address = $1 "#;
+
+    let day_now=Utc::now().date_naive();
+    
+    // 排除非今天的的nft
+    if DateTime::parse_from_rfc3339(&nft_floor_price.ts).unwrap().with_timezone(&Utc).date_naive() == day_now{
+        return Err(NovaDBErrs::NftFloorPriceNotToday.into());
+    };
+
+    let nft_collection={
+
+        // if don't have collection , inster new
+        let x=find_nft_collection(collect_address, conn_pool).await;
+        if x.is_err(){
+            let collection_floor_price=tables::CollectionFloorPrice{
+                floor_price:nft_floor_price.floor_price.clone(),
+                ts:nft_floor_price.ts.clone()
+            };
+            let inster_event=insert_new_nft_collection(collect_address, Some(collection_floor_price), Some(vec![nft_floor_price]), conn_pool).await;
+            if inster_event.is_err(){
+                return Err(NovaDBErrs::UnfindNFTContract.into());
+            }else {
+                return Ok(inster_event.unwrap());
+            }
+        };
+        x.unwrap()
+    };
+
+    
+    if nft_collection.collection_floor_price.is_none()  || 
+        (nft_collection.collection_floor_price.is_some() && 
+        nft_collection.collection_floor_price.clone().unwrap().floor_price.get(..nft_collection.collection_floor_price.clone().unwrap().floor_price.to_owned().len()-4).unwrap().parse::<u64>().unwrap() >
+        nft_floor_price.floor_price.get(..nft_floor_price.floor_price.len()-4).unwrap().parse::<u64>().unwrap()  &&
+        DateTime::parse_from_rfc3339(&nft_floor_price.ts).unwrap().with_timezone(&Utc).date_naive() >= DateTime::parse_from_rfc3339(&nft_collection.collection_floor_price.unwrap().ts).unwrap().with_timezone(&Utc).date_naive()
+    ){  
+        let new_collection_floor_price=tables::CollectionFloorPrice{
+            floor_price:nft_floor_price.floor_price.clone(),
+            ts:nft_floor_price.ts.clone()
+        };
+   
+        let mut nfts_floor_price=nft_collection.nfts_floor_price;
+
+        if nfts_floor_price.iter().any(|x| x.nft_key==nft_floor_price.nft_key){
+            nfts_floor_price.iter_mut().for_each(|x| {
+                if x.nft_key==nft_floor_price.nft_key &&   x.floor_price.get(..x.floor_price.len()-4).unwrap().parse::<u64>().unwrap()>nft_floor_price.floor_price.get(0..nft_floor_price.floor_price.len()-4).unwrap().parse::<u64>().unwrap(){
+                    x.floor_price=nft_floor_price.floor_price.clone();
+                }
+            });
+        }else {
+            nfts_floor_price.push(tables::NftFloorPrice { nft_key:nft_floor_price.nft_key.clone(), floor_price: nft_floor_price.floor_price.clone(), ts: nft_floor_price.ts.clone() });
+        }
+
+        let update_event=sqlx::query(&query1)
+                        .bind(collect_address)
+                        .bind(serde_json::to_value(nfts_floor_price).unwrap())
+                        .bind(serde_json::to_value(new_collection_floor_price).unwrap())
+                        .execute(conn_pool).await;
+        if update_event.is_err(){
+            return Err(NovaDBErrs::UpdateNFTCollectionErr.into());
+        }else {
+            return Ok(update_event.unwrap());
+        }
+    }else {
+        let mut nfts_floor_price=nft_collection.nfts_floor_price;
+
+        if nfts_floor_price.iter().any(|x| x.nft_key==nft_floor_price.nft_key
+        ){
+
+            nfts_floor_price.iter_mut().for_each(|x| {
+                if x.nft_key==nft_floor_price.nft_key && x.floor_price.get(..x.floor_price.len()-4).unwrap().parse::<u64>().unwrap()>nft_floor_price.floor_price.get(0..nft_floor_price.floor_price.len()-4).unwrap().parse::<u64>().unwrap(){
+                        x.floor_price=nft_floor_price.floor_price.clone();
+                }
+            });
+        }else {
+            nfts_floor_price.push(tables::NftFloorPrice { nft_key:nft_floor_price.nft_key.clone(), floor_price: nft_floor_price.floor_price.clone(), ts: nft_floor_price.ts.clone() });
+        }
+
+
+        let update_event=sqlx::query(query2).bind(collect_address).bind(serde_json::to_value(nfts_floor_price).unwrap()).execute(conn_pool).await;
+        if update_event.is_err(){
+            return Err(NovaDBErrs::UpdateNFTCollectionErr.into());
+        }else {
+            return Ok(update_event.unwrap());
+        }
+    }
+
 }
 
 
@@ -513,6 +718,53 @@ mod tests{
             tx:"1".to_string()
         };
         let data=update_wallet_stake_transactions(&wallet_address, &stake_transaction, &conn_pool).await;
+        println!("{:#?}",data);
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_find_nft_contract() -> Result<()> {
+        let conn_pool=create_db_conn_pool().await.unwrap();
+        let data=find_nft_collection("xxxxxxxx", &conn_pool).await;
+        println!("{:#?}",data);
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_inster_new_nft_contract() -> Result<()> {
+        let conn_pool=create_db_conn_pool().await.unwrap();
+
+        let price=tables::NftFloorPrice{
+            nft_key:"1".to_string(),
+            floor_price:"2".to_string(),
+            ts:"2024-09-10T14:51:57Z".to_string()
+        };
+
+        let collection_price=tables::CollectionFloorPrice{
+            floor_price:"1".to_string(),
+            ts:"2024-09-10T14:51:57Z".to_string()
+        };
+
+        let data1=insert_new_nft_collection(
+            "x1", None, None, &conn_pool).await;
+        let data2=insert_new_nft_collection("x2", None, Some(vec![price]), &conn_pool).await;
+        let data3=insert_new_nft_collection("xxxxxxxx",Some(collection_price) ,None, &conn_pool).await;
+
+        println!("{:#?}",data1);
+        println!("{:#?}",data2);
+        println!("{:#?}",data3);
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_update_nft_collection() -> Result<()> {
+        let conn_pool=create_db_conn_pool().await.unwrap();
+        let price=tables::NftFloorPrice{
+            nft_key:"3".to_string(),
+            floor_price:"1usei".to_string(),
+            ts:"2024-09-11T15:51:57Z".to_string()
+        };
+        let data=update_nft_collection("xxxxsx",&conn_pool,price).await;
         println!("{:#?}",data);
         Ok(())
     }

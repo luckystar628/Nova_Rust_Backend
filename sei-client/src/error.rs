@@ -44,6 +44,10 @@ pub enum NovaDBErrs {
     UpdateWalletTokenTransactionsErr,
     UpdateWalletStakeTransactionErr,
 
+    UnfindNFTContract,
+    InsterNewNFTContractErr,
+    NftFloorPriceNotToday,
+    UpdateNFTCollectionErr,
     AcquiteConnPoolErr,
 
 }
@@ -58,7 +62,11 @@ impl fmt::Display for NovaDBErrs {
             NovaDBErrs::UpdateWalletNftTransactionsErr=>write!(f,"Update wallet nft transaction error"),
             NovaDBErrs::UpdateWalletTokenTransactionsErr=>write!(f,"Update wallet token transaction error"),
             NovaDBErrs::UpdateWalletStakeTransactionErr=>write!(f,"Update wallet stake transaction error"),
+            NovaDBErrs::InsterNewNFTContractErr=>write!(f,"Inster new NFT contract erro"),
+            NovaDBErrs::UnfindNFTContract=>write!(f,"Unfind NFT contract"),
 
+            NovaDBErrs::NftFloorPriceNotToday=>write!(f,"The NFT or NFT Collection floor price not today"),
+            NovaDBErrs::UpdateNFTCollectionErr=>write!(f,"Update NFT Collection erro"),
             NovaDBErrs::AcquiteConnPoolErr=>write!(f,"Acquite db conn pool erro"),
         }
     }

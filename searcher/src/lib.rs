@@ -133,16 +133,220 @@ pub async fn save_to_db(
                 },
                 TransactionEvent::NftBatchBids(msgs) => {
                     for msg in msgs{
+                        let nft_info={
+                            let x=chain_apis::get_nfts_info_by_contract(Some(SEIRPCSERVER), &msg.collection, &vec![msg.nft_id.to_owned()]).await;
+                            if x.is_err(){
+                                eprintln!("{:#?}",&x.err().unwrap());
+                                continue;
+                            };
+                            x.unwrap()[0].to_owned()
+                        };
+                        let update_sender_transaction=nova_db::update_wallet_nft_transactions(&msg.sender, &nft_data_struct::NftTransaction::BatchBids(msg.clone()), &conn_pool).await;
+                        let update_receive_transaction=nova_db::update_wallet_nft_transactions(&msg.recipient,  &nft_data_struct::NftTransaction::BatchBids(msg.to_owned()),&conn_pool).await;
+                        let update_sender_wallet_nft_hold=nova_db::update_wallet_nft_hold(&msg.sender, &msg.collection, &nft_info, "del", &conn_pool).await;
+                        let update_receive_wallet_nft_hold=nova_db::update_wallet_nft_hold(&msg.recipient, &msg.collection, &nft_info, "add", &conn_pool).await;
+                        
+                        if update_sender_transaction.is_err(){
+                            eprintln!("{:#?}",&update_sender_transaction.err().unwrap());
+                        }else if update_receive_transaction.is_err() {
+                            eprintln!("{:#?}",&update_receive_transaction.err().unwrap());
+                        }else if update_sender_wallet_nft_hold.is_err() {
+                            eprintln!("{:#?}",&update_sender_wallet_nft_hold.err().unwrap());
+                        }else if update_receive_wallet_nft_hold.is_err() {
+                            eprintln!("{:#?}",&update_receive_wallet_nft_hold.err().unwrap());
+                        }else {
+                            println!("[*] Save NFT BatchBids data in DB Sucess");
+                        }
+                    }
+                },
+                TransactionEvent::NftOnlyTransfer(msgs) =>{
+                    for msg in msgs{
+                        let nft_info={
+                            let x=chain_apis::get_nfts_info_by_contract(Some(SEIRPCSERVER), &msg.collection, &vec![msg.nft_id.to_owned()]).await;
+                            if x.is_err(){
+                                eprintln!("{:#?}",&x.err().unwrap());
+                                continue;
+                            };
+                            x.unwrap()[0].to_owned()
+                        };
+                        let update_sender_transaction=nova_db::update_wallet_nft_transactions(&msg.sender, &nft_data_struct::NftTransaction::Transfer(msg.clone()), &conn_pool).await;
+                        let update_receive_transaction=nova_db::update_wallet_nft_transactions(&msg.recipient,  &nft_data_struct::NftTransaction::Transfer(msg.to_owned()),&conn_pool).await;
+                        let update_sender_wallet_nft_hold=nova_db::update_wallet_nft_hold(&msg.sender, &msg.collection, &nft_info, "del", &conn_pool).await;
+                        let update_receive_wallet_nft_hold=nova_db::update_wallet_nft_hold(&msg.recipient, &msg.collection, &nft_info, "add", &conn_pool).await;
+                        
+                        if update_sender_transaction.is_err(){
+                            eprintln!("{:#?}",&update_sender_transaction.err().unwrap());
+                        }else if update_receive_transaction.is_err() {
+                            eprintln!("{:#?}",&update_receive_transaction.err().unwrap());
+                        }else if update_sender_wallet_nft_hold.is_err() {
+                            eprintln!("{:#?}",&update_sender_wallet_nft_hold.err().unwrap());
+                        }else if update_receive_wallet_nft_hold.is_err() {
+                            eprintln!("{:#?}",&update_receive_wallet_nft_hold.err().unwrap());
+                        }else {
+                            println!("[*] Save NFT OnlyTransfer data in DB Sucess");
+                        }
+                    }
+                },
+                TransactionEvent::NftCretaeAuction(msgs) =>{
+                    for msg in msgs{
+                        let nft_info={
+                            let x=chain_apis::get_nfts_info_by_contract(Some(SEIRPCSERVER), &msg.collection, &vec![msg.nft_id.to_owned()]).await;
+                            if x.is_err(){
+                                eprintln!("{:#?}",&x.err().unwrap());
+                                continue;
+                            };
+                            x.unwrap()[0].to_owned()
+                        };
+                        let update_sender_transaction=nova_db::update_wallet_nft_transactions(&msg.sender, &nft_data_struct::NftTransaction::CretaeAuction(msg.clone()), &conn_pool).await;
+                        let update_receive_transaction=nova_db::update_wallet_nft_transactions(&msg.recipient,  &nft_data_struct::NftTransaction::CretaeAuction(msg.to_owned()),&conn_pool).await;
+                        let update_sender_wallet_nft_hold=nova_db::update_wallet_nft_hold(&msg.sender, &msg.collection, &nft_info, "del", &conn_pool).await;
+                        let update_receive_wallet_nft_hold=nova_db::update_wallet_nft_hold(&msg.recipient, &msg.collection, &nft_info, "add", &conn_pool).await;
+                        
+                        if update_sender_transaction.is_err(){
+                            eprintln!("{:#?}",&update_sender_transaction.err().unwrap());
+                        }else if update_receive_transaction.is_err() {
+                            eprintln!("{:#?}",&update_receive_transaction.err().unwrap());
+                        }else if update_sender_wallet_nft_hold.is_err() {
+                            eprintln!("{:#?}",&update_sender_wallet_nft_hold.err().unwrap());
+                        }else if update_receive_wallet_nft_hold.is_err() {
+                            eprintln!("{:#?}",&update_receive_wallet_nft_hold.err().unwrap());
+                        }else {
+                            println!("[*] Save NFT CreatelAuction data in DB Sucess");
+                        }
+                    }
+                },
+                TransactionEvent::NftCancelAuction(msgs) => {
+                    for msg in msgs{
+                        let nft_info={
+                            let x=chain_apis::get_nfts_info_by_contract(Some(SEIRPCSERVER), &msg.collection, &vec![msg.nft_id.to_owned()]).await;
+                            if x.is_err(){
+                                eprintln!("{:#?}",&x.err().unwrap());
+                                continue;
+                            };
+                            x.unwrap()[0].to_owned()
+                        };
+                        let update_sender_transaction=nova_db::update_wallet_nft_transactions(&msg.sender, &nft_data_struct::NftTransaction::CancelAuction(msg.clone()), &conn_pool).await;
+                        let update_receive_transaction=nova_db::update_wallet_nft_transactions(&msg.recipient,  &nft_data_struct::NftTransaction::CancelAuction(msg.to_owned()),&conn_pool).await;
+                        let update_sender_wallet_nft_hold=nova_db::update_wallet_nft_hold(&msg.sender, &msg.collection, &nft_info, "del", &conn_pool).await;
+                        let update_receive_wallet_nft_hold=nova_db::update_wallet_nft_hold(&msg.recipient, &msg.collection, &nft_info, "add", &conn_pool).await;
+                        
+                        if update_sender_transaction.is_err(){
+                            eprintln!("{:#?}",&update_sender_transaction.err().unwrap());
+                        }else if update_receive_transaction.is_err() {
+                            eprintln!("{:#?}",&update_receive_transaction.err().unwrap());
+                        }else if update_sender_wallet_nft_hold.is_err() {
+                            eprintln!("{:#?}",&update_sender_wallet_nft_hold.err().unwrap());
+                        }else if update_receive_wallet_nft_hold.is_err() {
+                            eprintln!("{:#?}",&update_receive_wallet_nft_hold.err().unwrap());
+                        }else {
+                            println!("[*] Save NFT CancelAuction data in DB Sucess");
+                        }
 
                     }
                 },
-                TransactionEvent::NftOnlyTransfer(msgs) => todo!(),
-                TransactionEvent::NftCretaeAuction(msgs) => todo!(),
-                TransactionEvent::NftCancelAuction(msgs) => todo!(),
-                TransactionEvent::NftPurchaseCart(msgs) => todo!(),
-                TransactionEvent::NftAcceptBid(msgs) => todo!(),
-                TransactionEvent::NftFixedSell(msgs) => todo!(),
-                TransactionEvent::NftOnlyCreateAuction(msgs) => todo!(),
+                TransactionEvent::NftPurchaseCart(msgs) =>{
+                    for msg in msgs{
+                        let nft_info={
+                            let x=chain_apis::get_nfts_info_by_contract(Some(SEIRPCSERVER), &msg.collection, &vec![msg.nft_id.to_owned()]).await;
+                            if x.is_err(){
+                                eprintln!("{:#?}",&x.err().unwrap());
+                                continue;
+                            };
+                            x.unwrap()[0].to_owned()
+                        };
+                        let update_sender_transaction=nova_db::update_wallet_nft_transactions(&msg.seller, &nft_data_struct::NftTransaction::PurchaseCart(msg.clone()), &conn_pool).await;
+                        let update_receive_transaction=nova_db::update_wallet_nft_transactions(&msg.recipient,  &nft_data_struct::NftTransaction::PurchaseCart(msg.to_owned()),&conn_pool).await;
+                        let update_sender_wallet_nft_hold=nova_db::update_wallet_nft_hold(&msg.seller, &msg.collection, &nft_info, "del", &conn_pool).await;
+                        let update_receive_wallet_nft_hold=nova_db::update_wallet_nft_hold(&msg.recipient, &msg.collection, &nft_info, "add", &conn_pool).await;
+                        
+                        if update_sender_transaction.is_err(){
+                            eprintln!("{:#?}",&update_sender_transaction.err().unwrap());
+                        }else if update_receive_transaction.is_err() {
+                            eprintln!("{:#?}",&update_receive_transaction.err().unwrap());
+                        }else if update_sender_wallet_nft_hold.is_err() {
+                            eprintln!("{:#?}",&update_sender_wallet_nft_hold.err().unwrap());
+                        }else if update_receive_wallet_nft_hold.is_err() {
+                            eprintln!("{:#?}",&update_receive_wallet_nft_hold.err().unwrap());
+                        }else {
+                            println!("[*] Save NFT PurchaseCart data in DB Sucess");
+                        }
+                    }
+                },
+                TransactionEvent::NftAcceptBid(msgs) =>{
+                    for msg in msgs{
+                        let nft_info={
+                            let x=chain_apis::get_nfts_info_by_contract(Some(SEIRPCSERVER), &msg.collection, &vec![msg.nft_id.to_owned()]).await;
+                            if x.is_err(){
+                                eprintln!("{:#?}",&x.err().unwrap());
+                                continue;
+                            };
+                            x.unwrap()[0].to_owned()
+                        };
+                        let update_sender_transaction=nova_db::update_wallet_nft_transactions(&msg.seller, &nft_data_struct::NftTransaction::AcceptBid(msg.clone()), &conn_pool).await;
+                        let update_receive_transaction=nova_db::update_wallet_nft_transactions(&msg.recipient,  &nft_data_struct::NftTransaction::AcceptBid(msg.to_owned()),&conn_pool).await;
+                        let update_sender_wallet_nft_hold=nova_db::update_wallet_nft_hold(&msg.seller, &msg.collection, &nft_info, "del", &conn_pool).await;
+                        let update_receive_wallet_nft_hold=nova_db::update_wallet_nft_hold(&msg.recipient, &msg.collection, &nft_info, "add", &conn_pool).await;
+                        
+                        if update_sender_transaction.is_err(){
+                            eprintln!("{:#?}",&update_sender_transaction.err().unwrap());
+                        }else if update_receive_transaction.is_err() {
+                            eprintln!("{:#?}",&update_receive_transaction.err().unwrap());
+                        }else if update_sender_wallet_nft_hold.is_err() {
+                            eprintln!("{:#?}",&update_sender_wallet_nft_hold.err().unwrap());
+                        }else if update_receive_wallet_nft_hold.is_err() {
+                            eprintln!("{:#?}",&update_receive_wallet_nft_hold.err().unwrap());
+                        }else {
+                            println!("[*] Save NFT AcceptBid data in DB Sucess");
+                        }
+                    }
+                },
+                TransactionEvent::NftFixedSell(msgs) => {
+                    for msg in msgs{
+                        let nft_info={
+                            let x=chain_apis::get_nfts_info_by_contract(Some(SEIRPCSERVER), &msg.collection, &vec![msg.nft_id.to_owned()]).await;
+                            if x.is_err(){
+                                eprintln!("{:#?}",&x.err().unwrap());
+                                continue;
+                            };
+                            x.unwrap()[0].to_owned()
+                        };
+                        let update_sender_transaction=nova_db::update_wallet_nft_transactions(&msg.sender, &nft_data_struct::NftTransaction::FixedSell(msg.clone()), &conn_pool).await;
+                        let update_receive_transaction=nova_db::update_wallet_nft_transactions(&msg.recipient,  &nft_data_struct::NftTransaction::FixedSell(msg.to_owned()),&conn_pool).await;
+                        let update_sender_wallet_nft_hold=nova_db::update_wallet_nft_hold(&msg.sender, &msg.collection, &nft_info, "del", &conn_pool).await;
+                        let update_receive_wallet_nft_hold=nova_db::update_wallet_nft_hold(&msg.recipient, &msg.collection, &nft_info, "add", &conn_pool).await;
+                        
+                        if update_sender_transaction.is_err(){
+                            eprintln!("{:#?}",&update_sender_transaction.err().unwrap());
+                        }else if update_receive_transaction.is_err() {
+                            eprintln!("{:#?}",&update_receive_transaction.err().unwrap());
+                        }else if update_sender_wallet_nft_hold.is_err() {
+                            eprintln!("{:#?}",&update_sender_wallet_nft_hold.err().unwrap());
+                        }else if update_receive_wallet_nft_hold.is_err() {
+                            eprintln!("{:#?}",&update_receive_wallet_nft_hold.err().unwrap());
+                        }else {
+                            println!("[*] Save NFT Fix sell data in DB Sucess");
+                        }
+                    }   
+                },
+                TransactionEvent::NftOnlyCreateAuction(msgs) =>{
+                    for msg in msgs{
+                        
+                        let nft_floor_price=nova_db::tables::NftFloorPrice { 
+                            nft_key: format!("{}-{}",&msg.collection,&msg.nft_id), 
+                            floor_price:msg.auction_price.to_owned(), 
+                            ts: msg.ts.to_owned() };
+                        let update_onlycreate_auction=nova_db::update_wallet_nft_transactions(msg.transaction_sender.to_owned().unwrap().as_str(), &nft_data_struct::NftTransaction::OnlyCreateAuction(msg.clone()), &conn_pool).await;
+                        let update_nft_contraction=nova_db::update_nft_collection(&msg.collection, &conn_pool, nft_floor_price).await;
+                        
+                        if update_nft_contraction.is_err(){
+                            eprintln!("{}",update_nft_contraction.err().unwrap())
+                        }else if update_onlycreate_auction.is_err() {
+                            println!("{}",update_onlycreate_auction.err().unwrap())
+                        }else {
+                            println!("[*] Save NFT OnlyCreateAuction and NFT Collection in DB Sucess");
+                        }
+                    }
+                },
                 TransactionEvent::TokenHeihtSwap(msgs) =>{
                     for msg in msgs{
                         let wallet_address=msg.clone().transaction_sender.unwrap();

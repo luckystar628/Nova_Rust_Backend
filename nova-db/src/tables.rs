@@ -46,3 +46,47 @@ impl<'r> sqlx::FromRow<'r, PgRow> for WalletInfo {
     }
 }
 
+#[derive(Serialize, Deserialize,Clone,Debug,PartialEq, Eq)]
+pub struct NftContract{
+    pub collection_address:String,
+    pub collection_floor_price:Option<CollectionFloorPrice>,
+    pub nfts_floor_price:Vec<NftFloorPrice>,
+}
+
+impl<'r> sqlx::FromRow<'r, PgRow> for NftContract {
+    fn from_row(row: &'r PgRow) -> Result<Self, sqlx::Error> {
+        let collection_address:String=row.try_get("collection_address")?;
+        let collection_floor_price:Option<serde_json::Value>=row.try_get("collection_floor_price")?;
+        let nfts_floor_price:Option<serde_json::Value>=row.try_get("nfts_floor_price")?;
+
+        let collection_floor_price=match collection_floor_price {
+            Some(json)=>Some(serde_json::from_value::<CollectionFloorPrice>(json).unwrap_or_default()),
+            None=>None,
+        };
+
+        let nfts_floor_price=match nfts_floor_price {
+            Some(json)=>serde_json::from_value::<Vec<NftFloorPrice>>(json).unwrap_or_default(),
+            None=>vec![],
+        };
+
+        Ok(Self {
+            collection_address,
+            collection_floor_price,
+            nfts_floor_price
+        })
+    }
+}
+
+
+#[derive(Serialize, Deserialize,Clone,Debug,PartialEq, Eq,Default)]
+pub struct CollectionFloorPrice{
+    pub floor_price:String,
+    pub ts:String,
+}
+
+#[derive(Serialize, Deserialize,Clone,Debug,PartialEq, Eq,Default)]
+pub struct NftFloorPrice{
+    pub nft_key:String,
+    pub floor_price:String,
+    pub ts:String,
+}
