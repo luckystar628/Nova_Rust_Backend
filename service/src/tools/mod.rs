@@ -1,1 +1,1 @@
-mod get_nftcollection_floor_price;
+pub mod  get_nftcollection_floor_price;

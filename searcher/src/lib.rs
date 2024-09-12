@@ -187,7 +187,7 @@ pub async fn save_to_db(
                         }
                     }
                 },
-                TransactionEvent::NftCretaeAuction(msgs) =>{
+                TransactionEvent::NftCreateAuction(msgs) =>{
                     for msg in msgs{
                         let nft_info={
                             let x=chain_apis::get_nfts_info_by_contract(Some(SEIRPCSERVER), &msg.collection, &vec![msg.nft_id.to_owned()]).await;
@@ -332,7 +332,7 @@ pub async fn save_to_db(
                     for msg in msgs{
                         
                         let nft_floor_price=nova_db::tables::NftFloorPrice { 
-                            nft_key: format!("{}-{}",&msg.collection,&msg.nft_id), 
+                            nft_id:msg.nft_id.to_owned(), 
                             floor_price:msg.auction_price.to_owned(), 
                             ts: msg.ts.to_owned() };
                         let update_onlycreate_auction=nova_db::update_wallet_nft_transactions(msg.transaction_sender.to_owned().unwrap().as_str(), &nft_data_struct::NftTransaction::OnlyCreateAuction(msg.clone()), &conn_pool).await;

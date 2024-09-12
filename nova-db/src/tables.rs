@@ -86,7 +86,7 @@ pub struct CollectionFloorPrice{
 
 #[derive(Serialize, Deserialize,Clone,Debug,PartialEq, Eq,Default)]
 pub struct NftFloorPrice{
-    pub nft_key:String,
+    pub nft_id:String,
     pub floor_price:String,
     pub ts:String,
 }

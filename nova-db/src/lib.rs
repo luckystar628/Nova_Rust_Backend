@@ -455,14 +455,14 @@ pub async fn update_nft_collection<'nova_db>(
    
         let mut nfts_floor_price=nft_collection.nfts_floor_price;
 
-        if nfts_floor_price.iter().any(|x| x.nft_key==nft_floor_price.nft_key){
+        if nfts_floor_price.iter().any(|x| x.nft_id==nft_floor_price.nft_id){
             nfts_floor_price.iter_mut().for_each(|x| {
-                if x.nft_key==nft_floor_price.nft_key &&   x.floor_price.get(..x.floor_price.len()-4).unwrap().parse::<u64>().unwrap()>nft_floor_price.floor_price.get(0..nft_floor_price.floor_price.len()-4).unwrap().parse::<u64>().unwrap(){
+                if x.nft_id==nft_floor_price.nft_id &&   x.floor_price.get(..x.floor_price.len()-4).unwrap().parse::<u64>().unwrap()>nft_floor_price.floor_price.get(0..nft_floor_price.floor_price.len()-4).unwrap().parse::<u64>().unwrap(){
                     x.floor_price=nft_floor_price.floor_price.clone();
                 }
             });
         }else {
-            nfts_floor_price.push(tables::NftFloorPrice { nft_key:nft_floor_price.nft_key.clone(), floor_price: nft_floor_price.floor_price.clone(), ts: nft_floor_price.ts.clone() });
+            nfts_floor_price.push(tables::NftFloorPrice { nft_id:nft_floor_price.nft_id.clone(), floor_price: nft_floor_price.floor_price.clone(), ts: nft_floor_price.ts.clone() });
         }
 
         let update_event=sqlx::query(&query1)
@@ -478,16 +478,16 @@ pub async fn update_nft_collection<'nova_db>(
     }else {
         let mut nfts_floor_price=nft_collection.nfts_floor_price;
 
-        if nfts_floor_price.iter().any(|x| x.nft_key==nft_floor_price.nft_key
+        if nfts_floor_price.iter().any(|x| x.nft_id==nft_floor_price.nft_id
         ){
 
             nfts_floor_price.iter_mut().for_each(|x| {
-                if x.nft_key==nft_floor_price.nft_key && x.floor_price.get(..x.floor_price.len()-4).unwrap().parse::<u64>().unwrap()>nft_floor_price.floor_price.get(0..nft_floor_price.floor_price.len()-4).unwrap().parse::<u64>().unwrap(){
+                if x.nft_id==nft_floor_price.nft_id && x.floor_price.get(..x.floor_price.len()-4).unwrap().parse::<u64>().unwrap()>nft_floor_price.floor_price.get(0..nft_floor_price.floor_price.len()-4).unwrap().parse::<u64>().unwrap(){
                         x.floor_price=nft_floor_price.floor_price.clone();
                 }
             });
         }else {
-            nfts_floor_price.push(tables::NftFloorPrice { nft_key:nft_floor_price.nft_key.clone(), floor_price: nft_floor_price.floor_price.clone(), ts: nft_floor_price.ts.clone() });
+            nfts_floor_price.push(tables::NftFloorPrice { nft_id:nft_floor_price.nft_id.clone(), floor_price: nft_floor_price.floor_price.clone(), ts: nft_floor_price.ts.clone() });
         }
 
 
@@ -735,7 +735,7 @@ mod tests{
         let conn_pool=create_db_conn_pool().await.unwrap();
 
         let price=tables::NftFloorPrice{
-            nft_key:"1".to_string(),
+            nft_id:"1".to_string(),
             floor_price:"2".to_string(),
             ts:"2024-09-10T14:51:57Z".to_string()
         };
@@ -760,7 +760,7 @@ mod tests{
     async fn test_update_nft_collection() -> Result<()> {
         let conn_pool=create_db_conn_pool().await.unwrap();
         let price=tables::NftFloorPrice{
-            nft_key:"3".to_string(),
+            nft_id:"3".to_string(),
             floor_price:"1usei".to_string(),
             ts:"2024-09-11T15:51:57Z".to_string()
         };

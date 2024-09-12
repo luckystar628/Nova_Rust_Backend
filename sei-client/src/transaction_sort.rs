@@ -8,7 +8,7 @@ pub enum TransactionEvent {
     NftMint(Vec<nft_data_struct::Mint>),
     NftBatchBids(Vec<nft_data_struct::BatchBids>),
     NftOnlyTransfer(Vec<nft_data_struct::Transfer>),
-    NftCretaeAuction(Vec<nft_data_struct::CretaeAuction>),
+    NftCreateAuction(Vec<nft_data_struct::CretaeAuction>),
     NftCancelAuction(Vec<nft_data_struct::CancelAuction>),
     NftPurchaseCart(Vec<nft_data_struct::PurchaseCart>),
     NftAcceptBid(Vec<nft_data_struct::AcceptBid>),
@@ -258,7 +258,7 @@ impl Transaction for tx_rp_struct::Log {
             }
 
 
-            TransactionEvent::NftCretaeAuction(x)
+            TransactionEvent::NftCreateAuction(x)
         
         }else if self.is_nft_cancel_auction() {
 
