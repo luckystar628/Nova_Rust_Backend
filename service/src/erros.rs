@@ -4,6 +4,7 @@ use std::fmt;
 pub enum ServicesErrs {
    UserWalletNotFound,
    UserNotHaveNFTs,
+   NFTCollectIsNone,
 }
 
 impl fmt::Display for ServicesErrs {
@@ -11,6 +12,7 @@ impl fmt::Display for ServicesErrs {
         match self {
             ServicesErrs::UserWalletNotFound=>write!(f,"Don't have this wallet"),
             ServicesErrs::UserNotHaveNFTs=>write!(f,"The user don't hold nfts"),
+            ServicesErrs::NFTCollectIsNone=>write!(f,"Don't have this nft collect data"),
         }
     }
 }
