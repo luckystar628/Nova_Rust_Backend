@@ -5,6 +5,7 @@ pub enum ServicesErrs {
    UserWalletNotFound,
    UserNotHaveNFTs,
    NFTCollectIsNone,
+   NFTsTransactionsIsNone
 }
 
 impl fmt::Display for ServicesErrs {
@@ -13,7 +14,8 @@ impl fmt::Display for ServicesErrs {
             ServicesErrs::UserWalletNotFound=>write!(f,"Don't have this wallet"),
             ServicesErrs::UserNotHaveNFTs=>write!(f,"The user don't hold nfts"),
             ServicesErrs::NFTCollectIsNone=>write!(f,"Don't have this nft collect data"),
+            ServicesErrs::NFTsTransactionsIsNone=>write!(f,"Don't have nft transaction is none"),
         }
-    }
+    }   
 }
 impl std::error::Error for ServicesErrs {}

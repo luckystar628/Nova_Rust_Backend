@@ -1,4 +1,4 @@
-use sei_client::data_feild_structs::nft_data_struct::NftAttribute;
+use sei_client::{data_feild_structs::nft_data_struct::NftAttribute, data_rp_structs::tx_rp_struct::FeeAmount};
 use serde::{Deserialize, Serialize};
 
 
@@ -26,8 +26,10 @@ pub struct UserNFTHold{
     pub buy_price:Option<String>,
     pub market_fee:Option<String>,
     pub floor_price:Option<String>,
+    pub gas_fee:Vec<FeeAmount>,
     pub unrealized_gains:Option<String>,
     pub attributes:Vec<NftAttribute>,
     pub ts:Option<String>,
     pub tx_hash:Option<String>,
 }
+
