@@ -172,7 +172,7 @@ pub async fn update_wallet_nft_transactions<'nova_db>(
                     (nft_data_struct::NftTransaction::FixedSell(t1), nft_data_struct::NftTransaction::FixedSell(t2)) =>t1.tx==t2.tx &&t1.ts==t2.ts ,
                     (nft_data_struct::NftTransaction::PurchaseCart(t1), nft_data_struct::NftTransaction::PurchaseCart(t2)) =>t1.tx==t2.tx &&t1.ts==t2.ts ,
                     (nft_data_struct::NftTransaction::AcceptBid(t1), nft_data_struct::NftTransaction::AcceptBid(t2)) => t1.tx==t2.tx &&t1.ts==t2.ts ,
-                    (nft_data_struct::NftTransaction::CretaeAuction(t1), nft_data_struct::NftTransaction::CretaeAuction(t2)) =>t1.tx==t2.tx &&t1.ts==t2.ts ,
+                    (nft_data_struct::NftTransaction::CreateAuction(t1), nft_data_struct::NftTransaction::CreateAuction(t2)) =>t1.tx==t2.tx &&t1.ts==t2.ts ,
                     (nft_data_struct::NftTransaction::CancelAuction(t1), nft_data_struct::NftTransaction::CancelAuction(t2)) => t1.tx==t2.tx &&t1.ts==t2.ts ,
                     _=>true,
                 }

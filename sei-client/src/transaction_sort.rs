@@ -8,7 +8,7 @@ pub enum TransactionEvent {
     NftMint(Vec<nft_data_struct::Mint>),
     NftBatchBids(Vec<nft_data_struct::BatchBids>),
     NftOnlyTransfer(Vec<nft_data_struct::Transfer>),
-    NftCreateAuction(Vec<nft_data_struct::CretaeAuction>),
+    NftCreateAuction(Vec<nft_data_struct::CreateAuction>),
     NftCancelAuction(Vec<nft_data_struct::CancelAuction>),
     NftPurchaseCart(Vec<nft_data_struct::PurchaseCart>),
     NftAcceptBid(Vec<nft_data_struct::AcceptBid>),
@@ -221,7 +221,7 @@ impl Transaction for tx_rp_struct::Log {
         
         }else if self.is_nft_create_auction() {
 
-            let mut x:Vec<nft_data_struct::CretaeAuction>=vec![];
+            let mut x:Vec<nft_data_struct::CreateAuction>=vec![];
 
             let get_nft_ids_and_indexs=|event:&tx_rp_struct::Event|->HashMap<String,usize>{
                 let mut nft_ids_and_indexs:HashMap<String,usize>=HashMap::new();
@@ -241,7 +241,7 @@ impl Transaction for tx_rp_struct::Log {
                 wasm_create_auction_event.attributes.iter().enumerate().for_each(|(index,attr)|{
                     if attr.key=="token_id" && attr.value==nft_id{
                         x.push(
-                            nft_data_struct::CretaeAuction{
+                            nft_data_struct::CreateAuction{
                                 collection:wasm_event.attributes[nft_id_index-4].value.to_owned(),
                                 sender:wasm_event.attributes[nft_id_index-2].value.to_owned(),
                                 recipient:wasm_event.attributes[nft_id_index-1].value.to_owned(),

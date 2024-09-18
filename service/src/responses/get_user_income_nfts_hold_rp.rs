@@ -23,19 +23,18 @@ pub struct IncomeNFT{
 }
 
 #[derive(Serialize, Deserialize,Clone,Debug,PartialEq, Eq)]
-pub enum NftTransaction {
+pub enum NFTTransaction {
     Buy(BuyNFTTransaction),
     Sell(SellNFTTransaction)
 }
+
 #[derive(Serialize, Deserialize,Clone,Debug,PartialEq, Eq)]
 pub struct BuyNFTTransaction{
     pub collection_address:String,
-    pub name:String, // CollectionInfo name + # + id 
     pub key:String, // collection + - +id
     pub token_id:String,
-    pub image:String,
-    pub buy_price:Option<String>,
-    pub marketplace_fee:Option<String>,
+    pub buy_price:String,
+    pub marketplace_fee:String,
     pub fee:Vec<FeeAmount>,
     pub ts:String,
     pub tx:String,
@@ -44,12 +43,10 @@ pub struct BuyNFTTransaction{
 #[derive(Serialize, Deserialize,Clone,Debug,PartialEq, Eq)]
 pub struct SellNFTTransaction{
     pub collection_address:String,
-    pub name:String, // CollectionInfo name + # + id 
     pub key:String, // collection + - +id
     pub token_id:String,
-    pub image:String,
-    pub sell_price:Option<String>,
-    pub royalties:Option<String>,
+    pub sell_price:String,
+    pub royalties:String,
     pub fee:Vec<FeeAmount>,
     pub ts:String,
     pub tx:String,

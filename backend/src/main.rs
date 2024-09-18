@@ -1,4 +1,6 @@
 
+mod web_routes;
+
 use actix_cors::Cors;
 use actix_web::{web::{self, Data}, App, HttpServer};
 use anyhow::Result;
@@ -32,8 +34,25 @@ async fn main()->Result<()> {
                 .allow_any_method()
                 .max_age(3600) 
             )
-            .service(web::scope("/user"))
-            .service(web::scope("/tools"))
+            .service(
+                web::scope("/user")
+                    .service(
+                        web::scope("/nft")
+                            .service(web_routes::get_user_income_nfts)
+                            .service(web_routes::get_user_nfts_hold)
+                            .service(web_routes::get_user_nfts_hold_top)
+                            .service(web_routes::get_user_nfts_trade_info)   
+                    )
+                    .service(
+                        web::scope("/token")
+                            .service(web_routes::get_user_tokens_hold)
+                            .service(web_routes::get_user_tokens_hold_top)   
+                    )
+            )
+            .service(
+                web::scope("/tools")
+            )
+            
     })
     .bind_openssl(("0.0.0.0", 19999),ssl_builder)?
     .run()

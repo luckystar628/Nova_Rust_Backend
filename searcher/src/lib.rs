@@ -197,8 +197,8 @@ pub async fn save_to_db(
                             };
                             x.unwrap()[0].to_owned()
                         };
-                        let update_sender_transaction=nova_db::update_wallet_nft_transactions(&msg.sender, &nft_data_struct::NftTransaction::CretaeAuction(msg.clone()), &conn_pool).await;
-                        let update_receive_transaction=nova_db::update_wallet_nft_transactions(&msg.recipient,  &nft_data_struct::NftTransaction::CretaeAuction(msg.to_owned()),&conn_pool).await;
+                        let update_sender_transaction=nova_db::update_wallet_nft_transactions(&msg.sender, &nft_data_struct::NftTransaction::CreateAuction(msg.clone()), &conn_pool).await;
+                        let update_receive_transaction=nova_db::update_wallet_nft_transactions(&msg.recipient,  &nft_data_struct::NftTransaction::CreateAuction(msg.to_owned()),&conn_pool).await;
                         let update_sender_wallet_nft_hold=nova_db::update_wallet_nft_hold(&msg.sender, &msg.collection, &nft_info, "del", &conn_pool).await;
                         let update_receive_wallet_nft_hold=nova_db::update_wallet_nft_hold(&msg.recipient, &msg.collection, &nft_info, "add", &conn_pool).await;
                         

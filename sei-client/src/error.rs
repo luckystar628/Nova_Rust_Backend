@@ -11,6 +11,9 @@ pub enum SeiClientErrs {
     GetTokeninfoByContractErr,
     GetTokenMinterInfoByContractErr,
     GetTokenMarketingInfoByContractErr,
+
+    IbcNotFound,
+
     Unkonw,
 
 }
@@ -26,6 +29,8 @@ impl fmt::Display for SeiClientErrs {
             SeiClientErrs::GetTokeninfoByContractErr=>write!(f,"Get token info by contract error"),
             SeiClientErrs::GetTokenMinterInfoByContractErr=>write!(f,"Get token minter by contract error"),
             SeiClientErrs::GetTokenMarketingInfoByContractErr=>write!(f,"Get token marekting info by contract error"),
+
+            SeiClientErrs::IbcNotFound=>write!(f,"IBC not found"),
 
             SeiClientErrs::Unkonw=>write!(f,"Unkonw error"),
             

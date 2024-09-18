@@ -9,7 +9,7 @@ pub async fn take<'tools>(
     collection_keys:&'tools HashMap<String,Vec<String>>,
     conn_pool:&'tools PgPool,
 )->HashMap<String,HashMap<String,Option<String>>>{
-    let mut nft_collections_floor_prices:HashMap<String,HashMap<String,Option<String>>>=HashMap::new();
+    let nft_collections_floor_prices:HashMap<String,HashMap<String,Option<String>>>=HashMap::new();
     let nft_collections_floor_prices=Arc::new(Mutex::new(nft_collections_floor_prices));
     let conn_pool=Arc::new(conn_pool.to_owned());
 
@@ -26,8 +26,9 @@ pub async fn take<'tools>(
 
         
         let hanlde:tokio::task::JoinHandle<Result<()>>=tokio::spawn(async move{
-            
-            let permit=semaphore.acquire().await?;
+
+            let _=semaphore.acquire().await?;
+ 
             let nft_collections_floor_prices=&mut nft_collections_floor_prices.lock().await;
             let mut nfts_floor_price:HashMap<String,Option<String>>=HashMap::new();
 

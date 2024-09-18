@@ -345,6 +345,10 @@ dependencies = [
  "anyhow",
  "dotenv",
  "openssl",
+ "sei-client",
+ "serde",
+ "serde_json",
+ "service",
  "sqlx",
  "tokio",
 ]
@@ -2495,12 +2499,14 @@ dependencies = [
 ]
 
 [[package]]
-name = "services"
+name = "service"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "chrono",
  "futures 0.3.30",
  "nova-db",
+ "reqwest",
  "sei-client",
  "serde",
  "serde_json",
