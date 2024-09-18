@@ -143,7 +143,7 @@ pub async fn take<'services>(
                                 tx_ptr.write(Some(t.tx.to_owned()));
                         }
                     },
-                    nft_data_struct::NftTransaction::CretaeAuction(t) =>{
+                    nft_data_struct::NftTransaction::CreateAuction(t) =>{
                         if  t.collection==collection_hold.collect_address &&
                             t.nft_id==nft_hold.token_id &&
                             &t.recipient==wallet_address{
@@ -275,7 +275,7 @@ pub async fn take<'services>(
         drop(tx_ptr);
     };
 
-    Ok(user_nft_collects_hold)
+    return Ok(user_nft_collects_hold);
 }
 
 fn add_ck_hashmap<'get_nft_hold_tool>(

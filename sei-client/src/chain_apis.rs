@@ -4,9 +4,13 @@ use reqwest::{self, Client};
 use anyhow::Result;
 use serde_json::{json, Value};
 use tokio::sync::Mutex;
-use crate::{data_feild_structs::{nft_data_struct::{self, NftAttribute}, token_data_struct}, data_rp_structs::{nft_collect_contract_rp_struct::{self, NFtAllInfo, NftCollectionInfo}, token_contract_rp_struct, tx_rp_struct::{BankTransactionData, EvmTransactionData, NativeTransactionData, StakeTransactionData, TransactionData}}, error::SeiClientErrs};
+use crate::{data_feild_structs::{nft_data_struct::{self, NftAttribute}, token_data_struct}, data_rp_structs::{ibc_rp_struct, nft_collect_contract_rp_struct::{self, NFtAllInfo, NftCollectionInfo}, token_contract_rp_struct, tx_rp_struct::{BankTransactionData, EvmTransactionData, NativeTransactionData, StakeTransactionData, TransactionData}}, error::SeiClientErrs};
 
-const ARCHIVE_RPC:&str="https://rest.sei-archive.pacific-1.seinetwork.io";
+
+// https://sei-archive-rest.kingnodes.com 
+//  https://rest.sei-archive.pacific-1.seinetwork.io
+pub const ARCHIVE_RPC:&str="https://sei-archive-rest.kingnodes.com";
+pub const SERVER_RPC:&str="http://173.0.55.178:1317";
 
 pub  async fn get_transaction_by_tx<'apis>(
     rpc_url:Option<&'apis str>,
@@ -16,7 +20,7 @@ pub  async fn get_transaction_by_tx<'apis>(
     let rpc_url=rpc_url.unwrap_or(ARCHIVE_RPC);
     let url=format!("{}/cosmos/tx/v1beta1/txs/{}",rpc_url,tx_hash);
     let client=Client::new();
-    // let client=Arc::new(Client::builder().proxy(reqwest::Proxy::all("http://127.0.0.1:8080").unwrap()).build().unwrap());
+    let client=Arc::new(Client::builder().proxy(reqwest::Proxy::all("http://172.20.10.10:10809").unwrap()).build().unwrap());
     let rp:Value=client.get(url)
                     .send().await?
                     .json().await?;
@@ -373,5 +377,27 @@ pub async fn get_token_info_by_contract<'apis>(
         })
     }else {
         return Err(SeiClientErrs::GetTokeninfoByContractErr.into());
+    }
+}
+
+
+pub async fn get_ibc_info<'apis>(
+    rpc_url:Option<&'apis str>,
+    ibc_address:&'apis str
+) -> Result<ibc_rp_struct::IbcInfo> {
+
+    let rpc_url=rpc_url.unwrap_or(ARCHIVE_RPC);
+
+    let ibc_address=ibc_address.get(4..).unwrap();
+    let client=&Client::new();
+
+    let data_rp:Value=client.get(format!("{}/ibc/apps/transfer/v1/denom_traces/{}",rpc_url,ibc_address))
+                            .send().await?
+                            .json().await?;
+
+    if let Some(ibc_info) =data_rp.get("denom_trace")  {
+        Ok(serde_json::from_value::<ibc_rp_struct::IbcInfo>(ibc_info.to_owned()).unwrap())
+    }else {
+        Err(SeiClientErrs::IbcNotFound.into())
     }
 }

@@ -36,7 +36,7 @@ pub enum NftTransaction {
     FixedSell(FixedSell),
     PurchaseCart(PurchaseCart),
     AcceptBid(AcceptBid),
-    CretaeAuction(CretaeAuction),
+    CreateAuction(CreateAuction),
     CancelAuction(CancelAuction),
 }
 
@@ -136,7 +136,7 @@ pub struct AcceptBid{
 }
 
 #[derive(Serialize, Deserialize,Clone,Debug,PartialEq, Eq)]
-pub struct CretaeAuction{
+pub struct CreateAuction{
     pub collection:String,
     pub sender:String,
     pub recipient:String,
