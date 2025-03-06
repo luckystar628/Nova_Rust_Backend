@@ -13,18 +13,17 @@
 
 
 1. **backend**
-    NOVA web后端程序 ，支持tls/wss，路由
+    NOVA web backend program, supports tls/wss, routing
 
 1. **nova-db**
-    NOVA 的数据库系统，记录用户nft，token持有数据，stake ，nft token 交易数据
-
+    NOVA's database system records user NFT, token holding data, stake, NFT token transaction data
 1. **searcher**
-    NOVA的数据引擎，获取实时区块链数据，过滤，解析，调用nova db，进行储存
+    NOVA's data engine obtains real-time blockchain data, filters, parses, and calls nova db for storage
 
 1. **service**
-    NOVA 对外开放的服务，http、grpc、rpc、wss
+    NOVA's open services include http, grpc, rpc, and wss
 
-## 进度
+## schedule
 - [ ] *backend*
     - [x] NFT
     - [ ] TOKEN
@@ -36,11 +35,11 @@
 # BACKEND API
 ### NFT APIS
 
-1. 获取用户持有的NFT
+1. Get the NFT held by the user
     > [GET]
     /user/nft/get_holding_nfts/**{wallet_address}**
 
-    **响应**
+  **response**
     ```json
         {
             [
@@ -129,11 +128,11 @@
  
 
 
-1. 获取用户income NFT
+1. Get user income NFT
     >[GET]
     /user/nft/get_income_nfts/**{wallet_address}**
 
-    **响应**
+    **response**
     ```json
     {
         [
@@ -189,11 +188,11 @@
 
     ---
 
-1. 获取用户持有NFT的TOP数据
+1. Get the top data of NFT held by the user
     > [GET]
     /user/nft/get_income_nfts/**{wallet_address}**
 
-    **响应**
+    **response**
 
     ```json
         {
