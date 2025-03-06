@@ -1,6 +1,6 @@
-# NOVA 后端
+# NOVA Backend
 
-## 项目结构
+## Project Structure
 ```bash
 |--./
 |---backend
