@@ -40,6 +40,7 @@
     /user/nft/get_holding_nfts/**{wallet_address}**
 
   **response**
+
     ```json
         {
             [
